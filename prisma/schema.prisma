@@ -1,0 +1,362 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  forms          Form[]
+  audits         AuditLog[]
+  accounts       Account[]
+  sessions       Session[]
+  passwordResets PasswordResetToken[]
+
+  @@map("users")
+}
+
+// Auth.js standard models (used by the Prisma adapter for session strategy)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Forms
+// ---------------------------------------------------------------------------
+
+enum FormStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+model Form {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  slug        String     @unique
+  status      FormStatus @default(DRAFT)
+  responseCount Int      @default(0)
+
+  logoUrl     String?
+  coverUrl    String?
+  theme       Json       @default("{}")
+
+  ownerId     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  versions  FormVersion[]
+  responses Response[]
+  settings  FormSettings?
+  logs      AuditLog[]
+
+  @@index([ownerId, status])
+  @@index([updatedAt])
+  @@map("forms")
+}
+
+/// Immutable snapshot of a form structure. Responses always point to the exact
+/// version they were submitted against so historical data survives edits.
+model FormVersion {
+  id        String   @id @default(cuid())
+  formId    String
+  version   Int
+  schema    Json
+  createdAt DateTime @default(now())
+
+  form       Form               @relation(fields: [formId], references: [id], onDelete: Cascade)
+  sections   Section[]
+  fields     Field[]
+  formulas   Formula[]
+  responses  Response[]
+
+  @@unique([formId, version])
+  @@map("form_versions")
+}
+
+model Section {
+  id        String @id @default(cuid())
+  versionId String
+  fieldId   String
+  label     String
+  title     String
+  description String?
+  position  Int
+
+  version FormVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  fields  Field[]     @relation("SectionFields")
+
+  @@unique([versionId, fieldId])
+  @@unique([versionId, position])
+  @@map("sections")
+}
+
+enum FieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  NUMBER
+  EMAIL
+  PHONE
+  DATE
+  TIME
+  DATETIME
+  DROPDOWN
+  MULTIPLE_CHOICE
+  CHECKBOX
+  RATING
+  LINEAR_SCALE
+  CURRENCY
+  PERCENTAGE
+  HIDDEN
+  SECTION
+  CALCULATION
+}
+
+enum FieldDataType {
+  STRING
+  NUMBER
+  BOOLEAN
+  DATE
+  DATETIME
+  CURRENCY
+  PERCENTAGE
+  ARRAY
+  NULL
+}
+
+model Field {
+  id        String       @id @default(cuid())
+  versionId String
+  sectionId String?
+  fieldId   String
+  type      FieldType
+  dataType  FieldDataType @default(STRING)
+  label     String
+  description String?
+  placeholder String?
+  helpText  String?
+  required  Boolean      @default(false)
+  readOnly  Boolean      @default(false)
+  visible   Boolean      @default(true)
+  cssClass  String?
+  position  Int
+  config    Json         @default("{}")
+  validation Json        @default("{}")
+  logic      Json        @default("{}")
+
+  version  FormVersion   @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  section  Section?      @relation("SectionFields", fields: [sectionId], references: [id], onDelete: Cascade)
+  options  FieldOption[]
+  formula  Formula?
+
+  @@unique([versionId, fieldId])
+  @@unique([versionId, position])
+  @@index([sectionId])
+  @@map("fields")
+}
+
+model FieldOption {
+  id       String  @id @default(cuid())
+  fieldRef String
+  value    String
+  label    String
+  position Int
+
+  field Field @relation(fields: [fieldRef], references: [id], onDelete: Cascade)
+
+  @@unique([fieldRef, value])
+  @@unique([fieldRef, position])
+  @@map("field_options")
+}
+
+/// Calculation formula attached to a CALCULATION field.
+model Formula {
+  id        String   @id @default(cuid())
+  versionId String
+  fieldRef  String   @unique
+  expression String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  version FormVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  field   Field       @relation(fields: [fieldRef], references: [id], onDelete: Cascade)
+
+  @@map("formulas")
+}
+
+model FormSettings {
+  id                  String    @id @default(cuid())
+  formId              String    @unique
+  submitButtonText    String    @default("Submit")
+  confirmationMessage String    @default("Thank you, your response has been recorded.")
+  redirectUrl         String?
+  allowMultipleResponses Boolean @default(true)
+  requireLogin        Boolean   @default(false)
+  storeResponses      Boolean   @default(true)
+  allowEditResponse   Boolean   @default(false)
+  captchaEnabled      Boolean   @default(false)
+  rateLimit           Int       @default(10)
+  submissionLimit     Int?
+  startDate           DateTime?
+  endDate             DateTime?
+  updatedAt           DateTime  @updatedAt
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("form_settings")
+}
+
+// ---------------------------------------------------------------------------
+// Responses
+// ---------------------------------------------------------------------------
+
+enum ResponseStatus {
+  SUBMITTED
+  SPAM
+}
+
+model Response {
+  id            String         @id @default(cuid())
+  publicId      String         @unique
+  formId        String
+  formVersionId String
+  status        ResponseStatus @default(SUBMITTED)
+  ipHash        String?
+  userAgent     String?
+  submittedAt   DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime       @default(now())
+
+  form        Form               @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formVersion FormVersion        @relation(fields: [formVersionId], references: [id], onDelete: Restrict)
+  answers     ResponseAnswer[]
+  results     CalculationResult[]
+
+  @@index([formId, submittedAt])
+  @@index([formVersionId])
+  @@map("responses")
+}
+
+/// Original user input. Stored as JSON so the renderer stays schema driven.
+model ResponseAnswer {
+  id         String   @id @default(cuid())
+  responseId String
+  fieldId    String
+  value      Json
+  createdAt  DateTime @default(now())
+
+  response Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@unique([responseId, fieldId])
+  @@map("response_answers")
+}
+
+/// Persisted alongside the formula so results stay auditable and recalculable.
+model CalculationResult {
+  id         String   @id @default(cuid())
+  responseId String
+  fieldId    String
+  formula    String
+  result     Json
+  createdAt  DateTime @default(now())
+
+  response Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@unique([responseId, fieldId])
+  @@map("calculation_results")
+}
+
+// ---------------------------------------------------------------------------
+// Audit
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  formId    String?
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  form  Form? @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId, createdAt])
+  @@map("audit_logs")
+}
