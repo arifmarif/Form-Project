@@ -107,6 +107,12 @@ Not deployed. No CI config, no `Dockerfile`, no hosting configuration. Local dev
 (port 3000). Dev server currently running on this machine (`next dev`, node PID 20008, started
 2026-10-02 00:52 after the `next.config.ts` change triggered a restart).
 
+Version control: Git, initialised 2026-10-02 on branch `main` with remote
+`origin` → `github.com/arifmarif/Form-Project.git`. First commit `7fd14e7`. Commit identity is set
+locally for this repo only. `.env` is untracked; `.env.example` is committed. `.claude/` and
+`.windsurf/` (vendored AI-tool skill bundles) are intentionally untracked; `.agents/` and
+`skills-lock.json` are tracked.
+
 ### Development Environment
 
 - Windows, PowerShell 5.1 shell for commands

@@ -115,14 +115,20 @@ Copy is inaccurate. Calculation fields display nothing meaningful in preview.
 Either soften the banner text, or build the engine (Milestone 5) and leave the text as is. Prefer
 building the engine, but do not let the copy claim working behaviour in the meantime.
 
-### Issue 3 — No Git repository
+### Issue 3 — Resolved: Git initialised on 2026-10-02
 
-`git status` → `fatal: not a git repository`. There is no version control, so there is no history,
-no diff review and no rollback safety net.
+The repository did not exist as a Git repo until 2026-10-02, when the user asked for it explicitly.
 
-#### Recommended Next Investigation
-
-`git init` + an initial commit of source + `AI_CONTEXT/` (this is the user's call, not an agent's).
+- `git init -b main`, remote `origin` → `github.com/arifmarif/Form-Project.git`
+- First commit `7fd14e7` "Initial commit: Form Platform foundation (Next.js 16 + Prisma 7)",
+  151 files, pushed to `origin/main` (verified with `git ls-remote`)
+- Commit identity is configured **locally** for this repo only: `arif <marif.rizky19@gmail.com>`;
+  the global Git config was not modified
+- `.gitignore` fixed: the `.env*` rule was also excluding `.env.example`, so the template is now
+  committed via `!.env.example`. `.env` itself stays untracked
+- Deliberately **not** committed: `.claude/` and `.windsurf/` (67 duplicated vendored Prisma skill
+  files each, installed per AI tool). `.agents/` and `skills-lock.json` **are** committed. Add the
+  others with `git add .claude .windsurf` only if they are wanted in the repo
 
 ### Issue 4 — README is still the create-next-app default
 

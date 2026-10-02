@@ -68,7 +68,8 @@ PRD milestone items that are scoped but not started:
 - [ ] Templates/theme picker beyond the three `formThemeSchema` knobs (§40).
 - [ ] Email verification and password reset — tables exist, no flow (§7 does not require it for MVP).
 - [ ] Admin role wiring — `Role.ADMIN` exists but grants nothing.
-- [ ] Initialise Git and make the first commit (user decision required).
+- [ ] Rewrite `README.md` from `PROJECT_CONTEXT.md` (setup, Docker, `db:generate`, seed, LAN host,
+      `npm run verify`). Tracked under Technical Debt as well.
 
 ## Bugs
 
@@ -84,8 +85,7 @@ PRD milestone items that are scoped but not started:
       into its own module when the engine and responses land.
 - [ ] `src/app/(app)/responses/page.tsx` imports `@/lib/db` directly, bypassing the service layer.
 - [ ] `README.md` is still the `create-next-app` default — no setup, seed, Docker or LAN instructions.
-- [ ] `.env.example` is matched by `.gitignore`'s `.env*` pattern, so it would never be committed
-      even though it is the intended template.
+      The required env vars are documented in `.env.example`, which is now committed.
 - [ ] `duplicateForm` copies the schema JSON but not the relational rows (see Next).
 - [ ] Response `ipHash` / `userAgent` columns and `FormSettings.captchaEnabled` / `rateLimit` /
       `submissionLimit` / `startDate` / `endDate` / `storeResponses` / `requireLogin` are all
@@ -125,3 +125,7 @@ PRD milestone items that are scoped but not started:
 - [x] `allowedDevOrigins` for LAN dev access.
 - [x] Test suite: 3 files, 49 tests, all passing; `npm run verify` (typecheck, lint, test, build) green.
 - [x] Portable AI context: `AGENTS.md` + `AI_CONTEXT/` (7 documents).
+- [x] Fixed `.gitignore` so `.env.example` is committed (`!.env.example`) while `.env` stays ignored.
+- [x] Git initialised on branch `main` with remote `origin` → `github.com/arifmarif/Form-Project.git`;
+      first commit `7fd14e7` (151 files) pushed and verified with `git ls-remote`. `.claude/` and
+      `.windsurf/` intentionally left untracked.

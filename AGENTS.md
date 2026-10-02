@@ -41,8 +41,9 @@ AI agent WAJIB:
 7. Read `AI_CONTEXT/HANDOFF.md`.
 8. Inspect the relevant source files (`src/lib/form-schema/schema.ts` is the contract; read it before
    touching schema, builder, renderer or validation).
-9. Check Git status (`git status`). Note: this repository is currently **not** initialised as a Git
-   repo — that is expected, do not "fix" it silently.
+9. Check Git status (`git status -sb`). The repo is initialised on branch `main` with remote `origin`
+   → `github.com/arifmarif/Form-Project.git`. Commit identity is set **locally** for this repo only
+   (`arif <marif.rizky19@gmail.com>`); global Git config was left untouched.
 10. Use Graphify when available and relevant.
 11. Check `.next/dev/logs/next-development.log` if something renders or posts unexpectedly.
 
@@ -211,4 +212,5 @@ git checkout
 or delete the user's changes without explicit permission.
 
 If the user asks for a commit, it must include the relevant source code **and** the relevant
-`AI_CONTEXT/` files.
+`AI_CONTEXT/` files. Never commit, amend, push, create a branch or change Git config without explicit
+instruction.

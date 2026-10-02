@@ -488,28 +488,37 @@ Hosts only, no port. The dev server restarted itself when the config was added.
 
 If the LAN IP changes, update this list.
 
-## Decision: Git is not initialized
+## Decision: Git initialised on 2026-10-02, main branch, GitHub remote
 
 ### Decision
 
-The project is not under version control. `.gitignore` exists and is correct, `git status` fails.
+`git init -b main`, remote `origin` → `github.com/arifmarif/Form-Project.git`. Commit identity is set
+**locally** for this repo (`arif <marif.rizky19@gmail.com>`), not globally. `.claude/` and
+`.windsurf/` stay untracked; `.agents/` and `skills-lock.json` are committed. `.env` is never
+committed; `.env.example` is (via a `!.env.example` negation, because the `.env*` rule was swallowing
+it).
 
 ### Reason
 
-Observed state; no decision was recorded to avoid Git.
+The user asked for `git init` + commit + push on 2026-10-02. Before that the project had no version
+control at all, which meant no history and no rollback safety net.
 
 ### Alternatives Considered
 
-Not applicable.
+- Committing the tool skill bundles too (`.claude/`, `.windsurf/`): rejected — 134 duplicate files of
+  third-party documentation, installable again from `skills-lock.json`.
+- Setting the identity globally: rejected — it would change the user's other repositories.
+- Using a GitHub noreply email: not needed, the user supplied their own address.
 
 ### Current Implementation
 
-No `.git` directory. Changes must be reviewed manually.
+Commit `7fd14e7` on `main`, pushed and verified with `git ls-remote`. Working tree clean except the
+two untracked skill directories. No `.gitattributes`; Windows `core.autocrlf` applies, so blobs are
+stored LF-normalised.
 
 ### Important
 
-Do not run `git init`, commit, reset or checkout without explicit user instruction. Flag the missing
-history in reports.
+Never run `git init` again, and never amend, force-push or change branch without explicit instruction.
 
 ## Decision: Idempotent seed with a real formula schema
 

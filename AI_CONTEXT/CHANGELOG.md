@@ -13,12 +13,21 @@
   preserved at the top of the file).
 - `next.config.ts`: `allowedDevOrigins: ["192.168.10.11"]` so the dev server works when the app is
   opened from another machine on the LAN.
+- Git repository initialised on branch `main` at the user's explicit request, remote `origin` →
+  `github.com/arifmarif/Form-Project.git`; first commit `7fd14e7` (151 files) pushed and verified with
+  `git ls-remote`.
 
 ### Changed
 
 - `src/server/actions/form-actions.ts`: removed the `export const formIdleState` value export.
 - `src/components/dashboard/create-form-form.tsx`: idle state passed inline as
   `{ status: "idle" }` instead of importing a constant from the server action module.
+- `.gitignore`: added `!.env.example` after the `.env*` rule, so the env template is committed while
+  `.env` and `.env.local` stay ignored.
+- Git commit identity configured with `--local` only (`arif <marif.rizky19@gmail.com>`); the global
+  Git config was not modified.
+- `AI_CONTEXT/` and `AGENTS.md` updated to reflect that version control now exists (the previous
+  "no Git repository" notes were removed as obsolete).
 
 ### Fixed
 
@@ -48,6 +57,16 @@
   Server Actions through the browser or a temporary route handler instead.
 - `npm run verify` green after the fix: typecheck, lint, 3 test files / 49 tests, production build
   (12 routes). `npx prisma migrate status` → up to date.
+- `npm run verify` re-run green after the documentation pass (no `.ts`/`.tsx` file changed since, the
+  diff is markdown-only).
+- Staged content was audited before committing: `.env`, `node_modules`, `.next`, `src/generated/`,
+  `*.pem` and `*.tsbuildinfo` are all excluded; a pattern scan over the 151 staged files found no
+  secrets. Placeholders only (`DATABASE_URL` in docs, `AUTH_SECRET=<required>`).
+- Known, reported, deliberately unchanged: `docker-compose.yml` keeps `POSTGRES_PASSWORD: postgres`
+  (local dev default matching `.env.example`) and `prisma/seed.ts:369` logs the demo fixture password
+  to stdout during seeding.
+- `.claude/` and `.windsurf/` were left untracked on purpose — 67 duplicated vendored Prisma skill
+  files each, reinstallable from `skills-lock.json`.
 
 ### Important Decisions
 
@@ -58,6 +77,9 @@
   LAN dev origin).
 - Graphify is not installed in this environment; dependency analysis was done by enumerating imports
   directly and is labelled as such in `ARCHITECTURE.md`. No Graphify output was fabricated.
+- Git decisions recorded in `DECISIONS.md`: initialise on `main`, local-only commit identity, commit
+  `.agents/` but not the per-tool `.claude/`/`.windsurf/` copies, keep `.env` untracked while
+  committing `.env.example`.
 
 ## 2026-10-01 (Milestone 4 work)
 

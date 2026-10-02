@@ -23,6 +23,9 @@ form owner builds forms from a canonical JSON schema and collects responses, wit
 engine producing server-authoritative calculated values. PRD: `form-builder-calculation-platform-prd.md`
 (Indonesian, 2286 lines). No payment, no email, no external services, not deployed.
 
+Git: branch `main`, remote `origin` → `github.com/arifmarif/Form-Project.git`, initialised 2026-10-02
+(first commit `7fd14e7`).
+
 ## CURRENT STATE
 
 Milestones 1–2 implemented; Milestone 3 partial (field add/edit/move/delete/save done — **no drag &
@@ -56,8 +59,9 @@ and verified; no application source file is modified.
    JSON column only. See `CURRENT_STATE.md` → Issue 1.
 2. **Preview banner overpromises** — `form-renderer.tsx:178` says calculations run; no calculation code
    exists. See `CURRENT_STATE.md` → Issue 2.
-3. **No Git repository** — `git status` fails. No history, no rollback. Do not `git init` or commit
-   without explicit instruction.
+3. **Git history is a single commit** — the repo was initialised on 2026-10-02
+   (branch `main`, remote `origin` → `github.com/arifmarif/Form-Project.git`, first commit
+   `7fd14e7`). There is no earlier history to consult; `AI_CONTEXT/` describes the pre-git state.
 4. **README is the `create-next-app` default** — no setup/seed/Docker/LAN instructions.
 5. **Page-level Prisma access** — `src/app/(app)/responses/page.tsx` queries `@/lib/db` directly,
    bypassing the service layer.
@@ -80,7 +84,9 @@ and verified; no application source file is modified.
 
 ## DO NOT CHANGE
 
-- Do not run `git init`, `git commit`, `git reset` or `git checkout` without explicit user instruction.
+- Do not run `git init`, `git commit --amend`, `git reset`, `git checkout`, force-push or change
+  branches without explicit user instruction. Never touch the global Git config; the commit identity
+  is set `--local` for this repo only.
 - Do not edit `src/generated/prisma/**`.
 - Do not add a second form renderer or a second validation engine.
 - Do not mutate or delete a `FormVersion` that a response references.
